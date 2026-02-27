@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/betterix/Code/School/ComputerGraphics/02_vertex_fragment_shader_primitives/build",
+  "command": "/usr/bin/g++ -I/home/betterix/Code/School/ComputerGraphics/02_vertex_fragment_shader_primitives/../OpenGLTemplate/include -g -std=gnu++11 -o CMakeFiles/02_Sample.dir/Source.cpp.o -c /home/betterix/Code/School/ComputerGraphics/02_vertex_fragment_shader_primitives/Source.cpp",
+  "file": "/home/betterix/Code/School/ComputerGraphics/02_vertex_fragment_shader_primitives/Source.cpp",
+  "output": "CMakeFiles/02_Sample.dir/Source.cpp.o"
+}
+]

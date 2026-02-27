@@ -1,0 +1,3 @@
+/home/betterix/Code/School/ComputerGraphics/02_vertex_fragment_shader_primitives/build/CMakeFiles/02_Sample.dir
+/home/betterix/Code/School/ComputerGraphics/02_vertex_fragment_shader_primitives/build/CMakeFiles/edit_cache.dir
+/home/betterix/Code/School/ComputerGraphics/02_vertex_fragment_shader_primitives/build/CMakeFiles/rebuild_cache.dir
