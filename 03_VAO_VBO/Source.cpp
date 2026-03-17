@@ -3,7 +3,8 @@
 	VAOCount
 };
 enum eBufferObject {
-	VBOVerticesData,
+	VBOVerticesData,	
+	VBOColorsData,
 	BOCount
 };
 enum eProgram {
@@ -19,12 +20,72 @@ enum eTexture {
 
 /** std::array használható a glm::vec2 csúcspontok tárolásához. */
 /** std::array can be used to store glm::vec2 vertices. */
-static array<vec2, 3> vertices = {
+/*
+static array<vec2, 5> vertices = {
 	//     X      Y
 	vec2(-0.5f, -0.5f),
 	vec2( 0.5f, -0.5f),
 	vec2( 0.0f,  0.5f),
+	vec2(-0.7f,  0.7f),
+	vec2(-0.7f,  -0.7f),
 };
+*/
+
+//static array<vec2, 362> vertices;
+//static array<vec3, 362> colors;
+
+static array<vec2, 20> vertices = {
+	vec2(-1.0, -1.0),
+	vec2(-1.0, 0.8),
+	vec2(1.0, 0.8),
+	vec2(-1.0, -1.0),
+	vec2(1.0, -1.0),
+	vec2(1.0, 0.8),
+
+	vec2(-1.0, 0.8),
+	vec2(0.0, 1.0),
+	vec2(1.0, 0.8),
+
+	vec2(0.2, -1),
+	vec2(0.2, 0.5),
+	vec2(0.0, 0.5),
+	vec2(0.8, -1),
+	vec2(0.8, 0.5),
+
+	vec2(-0.8, -0.2),
+	vec2(-0.8, 0.7),
+	vec2(-0.1, 0.7),
+	vec2(-0.8, -0.2),
+	vec2(-0.1, -0.2),
+	vec2(-0.1, 0.7),
+};
+
+static array<vec3, 20> colors = {
+	vec3(1.0, 1.0, 0.0),
+	vec3(1.0, 1.0, 0.0),
+	vec3(1.0, 1.0, 0.0),
+	vec3(1.0, 1.0, 0.0),
+	vec3(1.0, 1.0, 0.0),
+	vec3(1.0, 1.0, 0.0),
+
+	vec3(1.0, 0.0, 0.0),
+	vec3(1.0, 0.0, 0.0),
+	vec3(1.0, 0.0, 0.0),
+
+	vec3(1.0, 1.0, 0.0),
+	vec3(1.0, 1.0, 0.0),
+	vec3(1.0, 1.0, 0.0),
+	vec3(1.0, 1.0, 0.0),
+	vec3(1.0, 1.0, 0.0),
+
+	vec3(1.0, 0.0, 1.0),
+	vec3(1.0, 0.0, 1.0),
+	vec3(1.0, 0.0, 1.0),
+	vec3(1.0, 0.0, 1.0),
+	vec3(1.0, 0.0, 1.0),
+	vec3(1.0, 0.0, 1.0),
+};
+
 
 GLchar		windowTitle[]	= "VAO and VBO";
 
@@ -42,7 +103,8 @@ void initShaderProgram() {
 	glBindBuffer(GL_ARRAY_BUFFER, BO[VBOVerticesData]);
 	/** Másoljuk az adatokat a bufferbe! Megadjuk az aktuálisan csatolt buffert, azt hogy hány byte adatot másolunk,
 		a másolandó adatot, majd a feldolgozás módját is meghatározzuk: most az adat nem változik a feltöltés után. */
-	/** Copy the data to the buffer! First parameter is the currently attached buffer, second is the size of the buffer to be copied,
+	/** Copy the data to t
+	he buffer! First parameter is the currently attached buffer, second is the size of the buffer to be copied,
 		third is the array of data, fourth is working mode: now the data can not be modified after this step. */
 	/** std::array megadása paraméternek.                         pointer to first element */
 	/** std::array as parameter.  size in bytes                                    GPU memory organization */
@@ -71,6 +133,11 @@ void initShaderProgram() {
 	/** Aktiváljuk a shader-program objektumunkat az alapértelmezett fix csõvezeték helyett. */
 	/** Activate our shader-program object instead of the default fix pipeline. */
 	glUseProgram(program[QuadScreenProgram]);
+
+	glBindBuffer(GL_ARRAY_BUFFER, BO[VBOColorsData]);
+	glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(vec3), colors.data(), GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
 }
 
 void display(GLFWwindow* window, double currentTime) {
@@ -79,10 +146,14 @@ void display(GLFWwindow* window, double currentTime) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	/** A megadott adatok segítségével pontokat rajzolunk. */
 	/** We draw points with the defined arrays. */
-	glDrawArrays(GL_POINTS, 0, 3);
+	//glDrawArrays(GL_POINTS, 0, 5);
 	/** A megadott adatok segítségével háromszöget rajzolunk. */
 	/** We draw triangle with the defined arrays. */
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	//glDrawArrays(GL_TRIANGLES, 0, 3);
+	//glDrawArrays(GL_LINES, 3, 2);
+
+	//glDrawArrays(GL_TRIANGLE_FAN, 0, 362);
+	glDrawArrays(GL_TRIANGLES, 0, 20);
 }
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -122,9 +193,22 @@ int main(void) {
 	/** Az alkalmazáshoz kapcsolódó elõkészítõ lépések (paraméterek: major, minor OpenGL verziók, OpenGL pofile). */
 	/** The first initialization steps of the program (params: major, minor OpenGL versions, OpenGL pofile). */
 	init(3, 3, GLFW_OPENGL_COMPAT_PROFILE);
+
+	//vertices[0] = vec2(0.0f, 0.0f);
+	//colors[0] = vec3(0.0f, 0.0f, 1.0f);
+	
 	//init(3, 3, GLFW_OPENGL_CORE_PROFILE);	// Makes big points square instead of circle.
 	/** A rajzoláshoz használt shader programok betöltése. */
 	/** Loading the shader programs for rendering. */
+	/*
+	for (int i = 0; i <= 360; i++) {
+		float angle = (2 * M_PI * i) / 360;
+		float x = cos(angle);
+		float y = sin(angle);
+		vertices[i+1] = vec2(x, y);
+		colors[i+1] = vec3(0.0f, 1.0f, 0.0f);
+	}
+	*/
 	initShaderProgram();
 	/** Karakterkódolás a szövegekhez. */
 	/** Setting locale for characters of texts. */

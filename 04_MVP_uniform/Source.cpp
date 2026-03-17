@@ -35,6 +35,12 @@ GLchar			windowTitle[] = "Animation by MVP and Uniform Variables";
 
 GLuint			XoffsetLocation;
 GLuint			YoffsetLocation;
+
+GLuint			redLocation;
+GLuint			greenLocation;
+GLuint			blueLocation;
+GLuint			uniformColorLocation;
+
 GLfloat			x				= 0.00f;
 GLfloat			y				= 0.00f;
 GLfloat			increment		= 0.01f;
@@ -92,6 +98,13 @@ void initShaderProgram() {
 	/** Get the location of offsetX and offsetY attributums (vertexShader.glsl). */
 	XoffsetLocation = glGetUniformLocation(program[QuadScreenProgram], "offsetX");
 	YoffsetLocation = glGetUniformLocation(program[QuadScreenProgram], "offsetY");
+
+	redLocation = glGetUniformLocation(program[QuadScreenProgram], "redColor");
+	greenLocation = glGetUniformLocation(program[QuadScreenProgram], "greenColor");
+	blueLocation = glGetUniformLocation(program[QuadScreenProgram], "blueColor");
+
+	uniformColorLocation = glGetUniformLocation(program[QuadScreenProgram], "uniformColor");
+
 	/** Aktiváljuk a shader-program objektumunkat az alapértelmezett fix csõvezeték helyett. */
 	/** Activate our shader-program object instead of the default fix pipeline. */
 	glUseProgram(program[QuadScreenProgram]);
@@ -128,12 +141,14 @@ void display(GLFWwindow* window, double currentTime) {
 			/** Mozgassuk a háromszöget az x-tengely mentén! */
 			/** Let's move the triangle amoing x axis! */
 			x += increment;
+			y += increment;
 			/** A falakról pattanjunk vissza. */
 			/** Let's bounce back from the walls. */
-			if ((x > 1.0f) || (x < -1.0f)) increment = -increment;
+			if ((x > 0.5f) || (x < -0.5f)) increment = -increment;
 			/** Küldjük el az "x" értékét az "offsetX" számára. */
 			/** Send value of "x" to "offsetX" in the shader. */
 			glProgramUniform1f(program[QuadScreenProgram], XoffsetLocation, x);
+			glProgramUniform1f(program[QuadScreenProgram], YoffsetLocation, y);
 		}
 		else if (yDir) {
 			/** Mozgassuk a háromszöget az y-tengely mentén! */
@@ -141,13 +156,21 @@ void display(GLFWwindow* window, double currentTime) {
 			y += increment;
 			/** A falakról pattanjunk vissza. */
 			/** Let's bounce back from the walls. */
-			if ((y > 1.0f) || (y < -1.0f)) increment = -increment;
+			if ((y > 0.5f) || (y < -0.5f)) increment = -increment;
 			/** Küldjük el az "y" értékét az "offsetY" számára. */
 			/** Send value of "y" to "offsetY" in the shader. */
 			glProgramUniform1f(program[QuadScreenProgram], YoffsetLocation, y);
 		}
 		break;
 	}
+
+	glProgramUniform1f(program[QuadScreenProgram], redLocation, 1.0f);
+	glProgramUniform1f(program[QuadScreenProgram], greenLocation, 0.0f);
+	glProgramUniform1f(program[QuadScreenProgram], blueLocation, 0.0f);
+
+	vec3 uniformColor(1.0f, 0.0f, 0.0f);
+	glProgramUniform3fv(program[QuadScreenProgram], uniformColorLocation, 1, value_ptr(uniformColor));
+
 	/** A megadott adatok segítségével háromszöget rajzolunk. */
 	/** We draw triangle with the defined arrays. */
 	matModelView = matView * matModel;
