@@ -109,7 +109,7 @@ void initShaderProgram() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 	/** Drótvázmodell, mutatjuk a hátsó oldalakat is. */
 	/** Wireframe drawing showing even backsides. */
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	/** Mélységbuffer bekapcsolása a helyes láthatóságért. */
 	/** Enable depth test for visual ordering. */
 	glEnable(GL_DEPTH_TEST);
@@ -161,6 +161,10 @@ void display(GLFWwindow* window, double currentTime) {
 		cameraPosition -= cameraSpeed * normalize(cross(cameraDirection, cameraUpVector)); // compute side moving vector
 	if ((keyboard[GLFW_KEY_D]) || (keyboard[GLFW_KEY_RIGHT]))
 		cameraPosition += cameraSpeed * normalize(cross(cameraDirection, cameraUpVector)); // compute side moving vector
+	if ((keyboard[GLFW_KEY_Q]))
+		cameraPosition += cameraSpeed * cameraUpVector;
+	if ((keyboard[GLFW_KEY_R]))
+		cameraPosition -= cameraSpeed * cameraUpVector;
 	computeCameraMatrix();
 	/** A megadott adatok segítségével megrajzoljuk az objektumot. */
 	/** We draw the object with the defined array. */
