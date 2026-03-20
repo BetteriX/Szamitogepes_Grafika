@@ -36,6 +36,8 @@ vec3			cameraPosition	= vec3(0.0f,  0.0f,  3.0f),
 				cameraTarget;
 /* Tömb a kocka pontjainak és azok színeinek tárolásához. */
 /* Array for storing the points and colors of a cube. */
+
+/*
 static array<GLfloat, 6> verticesData[8] = {
 	//position        //colors
 	 1.0,  1.0, -1.0, 0.0, 0.0, 0.0,
@@ -47,9 +49,28 @@ static array<GLfloat, 6> verticesData[8] = {
 	-1.0, -1.0,  1.0, 1.0, 1.0, 1.0,
 	 1.0, -1.0,  1.0, 0.0, 0.0, 1.0
 };
+*/
+
+static array<GLfloat, 6> verticesData[4] = {
+	//position        //colors
+	 1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+	-1.0, -1.0, 1.0, 0.0, 1.0, 0.0,
+	 1.0, -1.0, 1.0, 0.0, 0.0, 1.0,
+	 1.0, -1.0, -1.0, 1.0, 1.0, 0.0
+};
 // Draw order for vertices in GL_TRIANGLE_STRIP mode.
+
+/*
 GLuint vertexDrawIndices[14] = {  
 	3, 2, 6, 7, 4, 2, 0, 3, 1, 6, 5, 4, 1, 0
+};
+*/
+
+GLuint vertexDrawIndices[12] = {
+	0, 1, 2,
+	0, 2, 3,
+	0, 2, 1,
+	3, 2, 1
 };
 
 void initShaderProgram() {
@@ -109,7 +130,8 @@ void initShaderProgram() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 	/** Drótvázmodell, mutatjuk a hátsó oldalakat is. */
 	/** Wireframe drawing showing even backsides. */
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // 1. Activity: change wireframe to solid model!
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	/** Mélységbuffer bekapcsolása a helyes láthatóságért. */
 	/** Enable depth test for visual ordering. */
 	glEnable(GL_DEPTH_TEST);
@@ -161,6 +183,7 @@ void display(GLFWwindow* window, double currentTime) {
 		cameraPosition -= cameraSpeed * normalize(cross(cameraDirection, cameraUpVector)); // compute side moving vector
 	if ((keyboard[GLFW_KEY_D]) || (keyboard[GLFW_KEY_RIGHT]))
 		cameraPosition += cameraSpeed * normalize(cross(cameraDirection, cameraUpVector)); // compute side moving vector
+	// 2. Activity: implement vertical movement! We can use the cameraUpVector for this, but we have to be careful with the direction of movement. Try both possibilities and choose the one you like better!
 	if ((keyboard[GLFW_KEY_Q]))
 		cameraPosition += cameraSpeed * cameraUpVector;
 	if ((keyboard[GLFW_KEY_R]))
@@ -276,6 +299,8 @@ int main(void) {
 	cout << "E\t\tEBO holds indices in GPU memory" << endl;
 	cout << "I\t\tindices are in CPU memory array" << endl;
 	cout << "WASD and arrows\tcamera control" << endl << endl;
+	cout << "Q\tMove camera to Up" << endl << endl;
+	cout << "R\tMove camera to Down" << endl << endl;
 	cout << "Weekly tasks" << endl;
 	cout << "Gyakorlat 1: Csináljuk szilárdtest modellre a kockát!" << endl;
 	cout << "Gyakorlat 2: Oldjuk meg a függőleges mozgást!" << endl;
