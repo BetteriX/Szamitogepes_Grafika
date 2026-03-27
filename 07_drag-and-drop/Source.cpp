@@ -22,6 +22,12 @@ GLfloat				aspectRatio;
 /* -1 jelentése, hogy nem vonszolunk semmit. */
 /* -1 means we are not dragging. */
 GLint				dragged = -1;
+GLuint				isLineLocation;
+
+vec2 oldMousePos;
+vector<vec2> oldVertices;
+bool dragAll = false;
+
 /* Vektor a szakasz végpontjainak tárolásához. */
 /* Vector for storing end points of a line. */
 static vector<vec2>	verticesData = {
@@ -42,6 +48,7 @@ void initShaderProgram() {
 		locationMatModel = glGetUniformLocation(program[programItem], "matModel");
 		locationMatView = glGetUniformLocation(program[programItem], "matView");
 		locationMatProjection = glGetUniformLocation(program[programItem], "matProjection");
+		isLineLocation = glGetUniformLocation(program[programItem], "isLine");
 	}
 	/** Csatoljuk a vertex array objektumunkat a paraméterhez. */
 	/** glBindVertexArray binds the vertex array object to the parameter. */
@@ -85,6 +92,7 @@ void initShaderProgram() {
 	glUniformMatrix4fv(locationMatModel, 1, GL_FALSE, value_ptr(matModel));
 	glUniformMatrix4fv(locationMatView, 1, GL_FALSE, value_ptr(matView));
 	glUniformMatrix4fv(locationMatProjection, 1, GL_FALSE, value_ptr(matProjection));
+	glUniform1i(isLineLocation, 1);
 }
 
 GLfloat distanceSquare(vec2 p1, vec2 p2) {
@@ -117,7 +125,9 @@ void display(GLFWwindow* window, double currentTime) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	/** A megadott adatok segítségével szakaszt és annak végpontjait rajzoljuk meg. */
 	/** We draw a line and its endpoints with the defined array. */
+	glUniform1i(isLineLocation, 1);
 	glDrawArrays(GL_LINES, 0, verticesData.size());
+	glUniform1i(isLineLocation, 0);
 	glDrawArrays(GL_POINTS, 0, verticesData.size());
 }
 
@@ -173,6 +183,35 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		framebufferSizeCallback(window, windowWidth, windowHeight);
 	}
 }
+
+vec2 screenToWorld(vec2 mousePos) {
+	dvec2 	mousePosition;
+	mousePosition.x = mousePos.x * 2.0f / (GLdouble)windowWidth - 1.0f;
+	mousePosition.y = ((GLdouble)windowHeight - mousePos.y) * 2.0f / (GLdouble)windowHeight - 1.0f;
+	if (projectionType == Orthographic) {
+		if (windowWidth < windowHeight)
+			mousePosition.y /= aspectRatio;
+		else
+			mousePosition.x *= aspectRatio;
+		return vec2(mousePosition);
+	}
+	else {
+		mat4 inVP = inverse(matProjection * matView);
+
+		vec4 nearClip = inVP * vec4(mousePosition.x, mousePosition.y, -1.0, 1.0);
+		vec4 farClip = inVP * vec4(mousePosition.x, mousePosition.y, 1.0, 1.0);
+
+		vec3 nearWorld = vec3(nearClip) / nearClip.w;
+		vec3 farWorld = vec3(farClip) / farClip.w;
+
+		vec3 dir = normalize(farWorld - nearWorld);
+
+		float t = -nearWorld.z / dir.z;
+
+		return vec2(nearWorld.x + t * dir.x, nearWorld.y + t * dir.y);
+	}
+}
+
 /** Az egér mutató helyét kezelõ függvény. */
 /** Callback function for mouse position change. */
 void cursorPosCallback(GLFWwindow* window, double xPos, double yPos) {
@@ -194,10 +233,18 @@ void cursorPosCallback(GLFWwindow* window, double xPos, double yPos) {
 		cout << "cursorPosCallback normalized coords\t" << mousePosition.x << "\t" << mousePosition.y << endl;
 		/** Tároljuk el a módosított értékeket. */
 		/** Let's store the modified values. */
-		verticesData.at(dragged) = mousePosition;
-		verticesData[dragged] = mousePosition;
+		verticesData.at(dragged) = screenToWorld(vec2(xPos, yPos));
+		verticesData[dragged] = screenToWorld(vec2(xPos, yPos));
 		/** Mozgassuk a módosított értékeket a GPU memóriájába. */
 		/** Let's transfer the modified values to the GPU. */
+		glBindBuffer(GL_ARRAY_BUFFER, BO[VBOVerticesData]);
+		glBufferData(GL_ARRAY_BUFFER, verticesData.size() * sizeof(vec2), verticesData.data(), GL_STATIC_DRAW);
+	}
+	if (dragAll) {
+		vec2 dir = screenToWorld(vec2(xPos, yPos)) - screenToWorld(oldMousePos);
+		for (int i = 0; i < verticesData.size(); i++) {
+			verticesData[i] = oldVertices[i] + dir;
+		}
 		glBindBuffer(GL_ARRAY_BUFFER, BO[VBOVerticesData]);
 		glBufferData(GL_ARRAY_BUFFER, verticesData.size() * sizeof(vec2), verticesData.data(), GL_STATIC_DRAW);
 	}
@@ -213,23 +260,36 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 		/** Obtain the pixel coordinates of the mouse. */
 		glfwGetCursorPos(window, &mousePosition.x, &mousePosition.y);
 		cout << "mouseButtonCallback glfwGetCursorPos\t" << mousePosition.x << "\t" << mousePosition.y << endl;
+
+		if (mods == GLFW_MOD_CONTROL && action == GLFW_PRESS) {
+			dragAll = true;
+			oldMousePos = mousePosition;
+			oldVertices = verticesData;
+		}
+		else {
+			dragged = getActivePoint(verticesData, 0.1f, screenToWorld(mousePosition));
+		}
+		
 		/** A pixelkoordináták [-1..+1] intervallumra transzformált értékei. */
 		/** The pixelcoordinates transformed to the [-1..+1] interval values. */
+		/*
 		mousePosition.x = mousePosition.x * 2.0f / (GLdouble)windowWidth - 1.0f;
 		mousePosition.y = ((GLdouble)windowHeight - mousePosition.y) * 2.0f / (GLdouble)windowHeight - 1.0f;
 		if (windowWidth < windowHeight)
 			mousePosition.y /= aspectRatio;
 		else
 			mousePosition.x *= aspectRatio;
+		*/
 		cout << "mouseButtonCallback normalized coords\t" << mousePosition.x << "\t" << mousePosition.y << endl;
 		/** dragged lesz az indexe a kiválasztott pontnak [0, 1, ...], -1 jelentése, hogy semmit nem fogtunk meg. */
-		/** dragged is the index of the point that is selected [0, 1, ...], -1 means nothing is grabbed. */
-		dragged = getActivePoint(verticesData, 0.1f, mousePosition);
+		/** dragged is the index of the point that is selected [0, 1, ...], -1 means nothing is grabbed. */	
 	}
 	/** Az egér bal gombjának felengedése mindenképp megszünteti a vonszolási üzemmódot. */
 	/** Releasing left mouse button stops dragging operation, even if it was not active before. */
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
 		dragged = -1;
+		dragAll = false;
+	}
 }
 
 int main(void) {
