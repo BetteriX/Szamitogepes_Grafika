@@ -1,9 +1,11 @@
 enum eVertexArrayObject {
 	VAOVerticesData,
+	VAOControlPointsData,
 	VAOCount
 };
 enum eBufferObject {
 	VBOVerticesData,
+	VBOControlPointsData,
 	BOCount
 };
 enum eProgram {
@@ -99,6 +101,13 @@ void drawBezierCurve(const vector<vec2>& controlPoints) {
 		pointToDraw.push_back(nextPoint);
 		t += increment;
 	}
+
+	/*
+	pointToDraw.push_back(controlPoints[0]);
+	pointToDraw.push_back(controlPoints[1]);
+	pointToDraw.push_back(controlPoints[2]);
+	pointToDraw.push_back(controlPoints[3]);
+	*/
 }
 
 void initShaderProgram() {
@@ -128,6 +137,13 @@ void initShaderProgram() {
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vec2), 0);
 
+	glBindVertexArray(VAO[VAOControlPointsData]);
+	glBindBuffer(GL_ARRAY_BUFFER, BO[VBOControlPointsData]);
+	glBufferData(GL_ARRAY_BUFFER, myControlPoints.size() * sizeof(vec2), myControlPoints.data(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vec2), 0);
+
 	glUseProgram(program[QuadScreenProgram]);
 
 	/* Mátrixok kezdőértéke. / Initial matrix values. */
@@ -150,7 +166,16 @@ void display(GLFWwindow* window, double currentTime) {
 	/* Draw the Bezier curve as a connected line strip. */
 	glUniform1i(isLine, 1);
 	glLineWidth(2.0f);
+	//glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)pointToDraw.size()-4);
+
+	glBindVertexArray(VAO[VAOVerticesData]);
 	glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)pointToDraw.size());
+
+	glBindVertexArray(VAO[VAOControlPointsData]);
+	glDrawArrays(GL_POINTS, 0, 4);
+	glDrawArrays(GL_LINE_STRIP, 0, 4);
+
+	// glDrawArrays(GL_POINTS, 0, 4);
 }
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -175,6 +200,7 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	}
 
 	glUniformMatrix4fv(locationMatProjection, 1, GL_FALSE, value_ptr(matProjection));
+
 }
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
