@@ -26,6 +26,21 @@ vec3	cameraPosition	= vec3( 0.0f, 0.0f, 1.5f),
 		cameraMovingY	= vec3( 0.0f, 1.0f, 0.0f);
 GLuint	lightPositionLoc;
 vec3	lightPosition;			// it is a headlight, it will follow the camera
+vec3 lightColor[] = {
+	vec3(1.0f, 0.0f, 0.0f),  // ambient
+	vec3(0.0f, 1.0f, 0.0f),  // diffuse
+	vec3(0.0f, 0.0f, 1.0f)  // specular
+};
+GLuint lightColorLoc;
+
+vec3 lightPositions[] = {
+	vec3(10.0f, 1.0f, 5.0f),
+	vec3(3.0f, 10.0f, 15.0f),
+	vec3(7.0f, 3.0f, 20.0f),
+};
+int numPositions = 3;
+GLuint positionsLoc, numPosLoc;
+
 GLuint	inverseTransposeMatrixLoc;
 mat3	inverseTransposeMatrix;	// for normal vectors of lighting
 
@@ -87,6 +102,9 @@ void initShaderProgram() {
 		locationMatModel = glGetUniformLocation(program[programItem], "matModel");
 		locationMatView = glGetUniformLocation(program[programItem], "matView");
 		locationMatProjection = glGetUniformLocation(program[programItem], "matProjection");
+		lightColorLoc = glGetUniformLocation(program[programItem], "lightColor");
+		positionsLoc = glGetUniformLocation(program[programItem], "positions");
+		numPosLoc = glGetUniformLocation(program[programItem], "numPos");
 	}
 	/** Csatoljuk a vertex array objektumunkat a paraméterhez. */
 	/** glBindVertexArray binds the vertex array object to the parameter. */
@@ -140,6 +158,11 @@ void initShaderProgram() {
 	inverseTransposeMatrixLoc = glGetUniformLocation(program[QuadScreenProgram], "inverseTransposeMatrix");
 	lightPositionLoc = glGetUniformLocation(program[QuadScreenProgram], "lightPosition");
 	cameraPositionLoc = glGetUniformLocation(program[QuadScreenProgram], "cameraPosition");
+	glUniform3fv(lightColorLoc, 1, value_ptr(lightColor[0]));
+	glUniform3fv(positionsLoc, 1, value_ptr(lightPositions[0]));
+	glUniform1i(numPosLoc, numPositions);
+	//glProgramUniform3fv(program[QuadScreenProgram], lightColorLoc, lightColor);
+	//glUniformMatrix3fv(lightColorLoc, 1, GL_FALSE, lightColor);
 	/** Fekete lesz a háttér. */
 	/** Background is black. */
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
