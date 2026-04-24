@@ -24,10 +24,30 @@ vec3	cameraPosition	= vec3( 0.0f, 0.0f, 1.5f),
 		cameraUpVector	= vec3( 0.0f, 1.0f, 0.0f),
 		cameraMovingX	= vec3(-1.0f, 0.0f, 0.0f),
 		cameraMovingY	= vec3( 0.0f, 1.0f, 0.0f);
-GLuint	lightPositionLoc;
+GLuint	lightPosLoc;
 vec3	lightPosition;			// it is a headlight, it will follow the camera
 GLuint	inverseTransposeMatrixLoc;
 mat3	inverseTransposeMatrix;	// for normal vectors of lighting
+
+GLuint	emissive;
+GLuint	matLoc;
+
+vec3	matColor[] = {
+	vec3(1.0, 0.0, 0.0), // ambient matcolor
+	vec3(0.0, 1.0, 0.0), // diffuse matcolor
+	vec3(0.0, 0.0, 1.0), // specular matcolor
+};
+
+GLuint lightPosLoc;
+
+vec3 lightPosition[] = {
+	vec3(10.0, 0.0, 10.0),
+	vec3(0.0, 2.0, 5.0),
+	vec3(-3.0, -20.0, 0.0),
+	cameraPosition,
+};
+
+GLuint lightCountLoc;
 
 GLfloat verticesData[] = {
 	// positions		  // colors			 // normals
@@ -41,7 +61,7 @@ GLfloat verticesData[] = {
 	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
 	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f,  0.0f,  1.0f,
 	 0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f,  1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f,  1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,  1.0f,
 	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
 	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
 
@@ -87,6 +107,9 @@ void initShaderProgram() {
 		locationMatModel = glGetUniformLocation(program[programItem], "matModel");
 		locationMatView = glGetUniformLocation(program[programItem], "matView");
 		locationMatProjection = glGetUniformLocation(program[programItem], "matProjection");
+		emissive = glGetUniformLocation(program[programItem], "emissive");
+		matLoc = glGetUniformLocation(program[programItem], "matColor");
+		lightCountLoc = glGetUniformLocation(program[programItem], "lightCount");
 	}
 	/** Csatoljuk a vertex array objektumunkat a paraméterhez. */
 	/** glBindVertexArray binds the vertex array object to the parameter. */
@@ -139,10 +162,14 @@ void initShaderProgram() {
 	glUniformMatrix4fv(locationMatModel, 1, GL_FALSE, value_ptr(matModel));
 	glUniformMatrix4fv(locationMatView, 1, GL_FALSE, value_ptr(matView));
 	glUniformMatrix4fv(locationMatProjection, 1, GL_FALSE, value_ptr(matProjection));
+	glUniform3f(emissive, 1.0, 1.0, 1.0);
+	glUniform3fv(matLoc, 1, value_ptr(matColor[0]));
+	glUniform3fv(lightPosLoc, 1, value_ptr(lightPosition));
+	glUniform1i(lightCountLoc, 4);
 	/** Shader változó location lekérdezése. */
 	/** Getting shader variable location. */
 	inverseTransposeMatrixLoc = glGetUniformLocation(program[QuadScreenProgram], "inverseTransposeMatrix");
-	lightPositionLoc = glGetUniformLocation(program[QuadScreenProgram], "lightPosition");
+	lightPosLoc = glGetUniformLocation(program[QuadScreenProgram], "lightPosition");
 	cameraPositionLoc = glGetUniformLocation(program[QuadScreenProgram], "cameraPosition");
 	/** Fekete lesz a háttér. */
 	/** Background is black. */
@@ -195,7 +222,7 @@ void display(GLFWwindow* window, double currentTime) {
 	/** Pass parameters to the shaders. */
 	inverseTransposeMatrix = mat3(inverseTranspose(matModel));
 	glUniformMatrix3fv(inverseTransposeMatrixLoc, 1, GL_FALSE, value_ptr(inverseTransposeMatrix));
-	glUniform3fv(lightPositionLoc, 1, value_ptr(lightPosition));
+	glUniform3fv(lightPosLoc, 1, value_ptr(lightPosition));
 	glUniform3fv(cameraPositionLoc, 1, value_ptr(cameraPosition));
 	/** A téglatest megrajzolása. */
 	/** Draw the brick. */
