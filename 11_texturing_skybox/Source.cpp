@@ -13,6 +13,7 @@ enum eProgram {
 };
 enum eTexture {
 	BrickTexture,
+	GraffitiTexture,
 	TextureCount
 };
 
@@ -27,26 +28,26 @@ GLfloat verticesData[] = {
 	-1.0f, -1.0f,  1.0f,
 	 1.0f, -1.0f,  1.0f,
 	 0.0f,  1.0f,  0.0f,
-	// jobb oldali háromszöge
-	 1.0f, -1.0f,  1.0f,
-	 1.0f, -1.0f, -1.0f,
-	 0.0f,  1.0f,  0.0f,
-	// hátulsó oldali háromszöge
-	 1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f, -1.0f,
-	 0.0f,  1.0f,  0.0f,
-	// bal oldali háromszöge
-	-1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f,  1.0f,
-	 0.0f,  1.0f,  0.0f,
-	// base rectangle / az alaplap egy négyzet
-	-1.0f, -1.0f, -1.0f,
-	 1.0f, -1.0f,  1.0f,
-	-1.0f, -1.0f,  1.0f,
+	 // jobb oldali háromszöge
+	  1.0f, -1.0f,  1.0f,
+	  1.0f, -1.0f, -1.0f,
+	  0.0f,  1.0f,  0.0f,
+	  // hátulsó oldali háromszöge
+	   1.0f, -1.0f, -1.0f,
+	  -1.0f, -1.0f, -1.0f,
+	   0.0f,  1.0f,  0.0f,
+	   // bal oldali háromszöge
+	   -1.0f, -1.0f, -1.0f,
+	   -1.0f, -1.0f,  1.0f,
+		0.0f,  1.0f,  0.0f,
+		// base rectangle / az alaplap egy négyzet
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
 
-	 1.0f, -1.0f,  1.0f,
-	-1.0f, -1.0f, -1.0f,
-	 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
 };
 /** A modellünket alkotó valamennyi vertex számára megadjuk a textúra-koordináta értékeket.
 Az itt megadott értékek a textúrázáshoz felhasznált kép pixeleire (texel) hivatkoznak, vagyis
@@ -62,11 +63,11 @@ GLfloat texCoords[] = {
 	1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f
 };
 mat4			rotateM, scaleM; // transformation matrices
-vec3			cameraPosition	= vec3( 0.0f, 0.0f, 3.0f),
-				cameraTarget	= vec3( 0.0f, 0.0f, 0.0f),
-				cameraUpVector	= vec3( 0.0f, 1.0f, 0.0f),
-				cameraMovingX	= vec3(-1.0f, 0.0f, 0.0f),
-				cameraMovingY	= vec3( 0.0f, 1.0f, 0.0f);
+vec3			cameraPosition = vec3(0.0f, 0.0f, 3.0f),
+cameraTarget = vec3(0.0f, 0.0f, 0.0f),
+cameraUpVector = vec3(0.0f, 1.0f, 0.0f),
+cameraMovingX = vec3(-1.0f, 0.0f, 0.0f),
+cameraMovingY = vec3(0.0f, 1.0f, 0.0f);
 /** Textúra objektum generálása, a lehetséges argumentumok listáját a SOIL2.h állományban szereplõ dokumentáció részletezi. */
 /** Build up a texture object, parameters enlisted in SOIL2.h. */
 GLuint loadTexture(const GLchar* texturePath) {
@@ -125,8 +126,8 @@ void initShaderProgram() {
 	glBindBuffer(GL_ARRAY_BUFFER, BO[VBOVerticesData]);
 	/** Másoljuk az adatokat a bufferbe! Megadjuk az aktuálisan csatolt buffert, azt hogy hány byte adatot másolunk,
 		a másolandó adatot, majd a feldolgozás módját is meghatározzuk: most az adat nem változik a feltöltés után. */
-	/** Copy the data to the buffer! First parameter is the currently attached buffer, second is the size of the buffer to be copied,
-		third is the array of data, fourth is working mode: now the data can not be modified after this step. */
+		/** Copy the data to the buffer! First parameter is the currently attached buffer, second is the size of the buffer to be copied,
+			third is the array of data, fourth is working mode: now the data can not be modified after this step. */
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verticesData), verticesData, GL_STATIC_DRAW);
 	/** Ezen adatok szolgálják a location = 0 vertex attribútumot (itt: pozíció).
 		Elsõként megadjuk ezt az azonosítószámot (vertexShader.glsl).
@@ -135,13 +136,13 @@ void initShaderProgram() {
 		Negyedik az adat normalizálása, ez maradhat FALSE jelen példában.
 		Az attribútum értékek hogyan következnek egymás után? Milyen lépésköz után találom a következõ vertex adatait?
 		Végül megadom azt, hogy honnan kezdõdnek az értékek a pufferben. Most rögtön, a legelejétõl veszem õket. */
-	/** These values are for location = 0 vertex attribute (position).
-		First is the location (vertexShader.glsl).
-		Second is attribute size (vec3, as in the shader).
-		Third is the data type.
-		Fourth defines whether data shall be normalized or not, this is FALSE for the examples of the course.
-		Fifth is the distance in bytes to the next vertex element of the array.
-		Last is the offset of the first vertex data of the buffer. Now it is the start of the array. */
+		/** These values are for location = 0 vertex attribute (position).
+			First is the location (vertexShader.glsl).
+			Second is attribute size (vec3, as in the shader).
+			Third is the data type.
+			Fourth defines whether data shall be normalized or not, this is FALSE for the examples of the course.
+			Fifth is the distance in bytes to the next vertex element of the array.
+			Last is the offset of the first vertex data of the buffer. Now it is the start of the array. */
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	/** Engedélyezzük az imént definiált location = 0 attribútumot (vertexShader.glsl ). */
 	/** Enable the previously defined location = 0 attributum (vertexShader.glsl ). */
@@ -176,10 +177,14 @@ void initShaderProgram() {
 	/* Textúra objektum létrehozása. */
 	/* Creating texture object. */
 	texture[BrickTexture] = loadTexture("brick.jpg");
+	texture[GraffitiTexture] = loadTexture("graffiti.png");
 	/* A fragment shaderünk számára biztosítjuk a textúra objektumhoz a hozzáférést (uniform sampler variable). */
 	/* Fragment shader gets access to the texture object (uniform sampler variable). */
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture[BrickTexture]);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture[GraffitiTexture]);
 }
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -235,13 +240,13 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 
 void computeModelMatrix() {
-	rotateM		= rotate(mat4(1.0f), radians(45.0f), vec3(0.0f, 1.0f, 0.0f));
-	scaleM		= scale(mat4(1.0f), vec3(1.0f, 0.5f, 1.0f));
-	matModel	= rotateM * scaleM;
+	rotateM = rotate(mat4(1.0f), radians(45.0f), vec3(0.0f, 1.0f, 0.0f));
+	scaleM = scale(mat4(1.0f), vec3(1.0f, 0.5f, 1.0f));
+	matModel = rotateM * scaleM;
 }
 
 void computeCameraMatrix() {
-	matView		= lookAt(cameraPosition, cameraTarget, cameraUpVector);
+	matView = lookAt(cameraPosition, cameraTarget, cameraUpVector);
 }
 
 void display(GLFWwindow* window, double currentTime) {
